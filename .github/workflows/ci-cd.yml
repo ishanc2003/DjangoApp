@@ -19,7 +19,7 @@ jobs:
     - name: Login to Azure
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CLIENT_ID }},${{ secrets.AZURE_CLIENT_SECRET }},${{ secrets.AZURE_TENANT_ID }},${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Login to Azure Container Registry
       run: |
@@ -41,7 +41,7 @@ jobs:
     - name: Login to Azure
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CLIENT_ID }},${{ secrets.AZURE_CLIENT_SECRET }},${{ secrets.AZURE_TENANT_ID }},${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Deploy to Azure VM
       run: |
