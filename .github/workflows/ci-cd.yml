@@ -50,11 +50,11 @@ jobs:
 
     - name: Check SSH Connectivity
       run: |
-        ssh -vvv -o StrictHostKeyChecking=no your_username@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
+        ssh -vvv -o StrictHostKeyChecking=no ishanc2003@outlook.com@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
 
     - name: Deploy to Azure VM
       run: |
-        ssh -o StrictHostKeyChecking=no your_username@${{ secrets.VM_IP }} << 'EOF'
+        ssh -o StrictHostKeyChecking=no ishanc2003@outlook.com@${{ secrets.VM_IP }} << 'EOF'
         docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
         docker stop djangoapp || true
         docker rm djangoapp || true
