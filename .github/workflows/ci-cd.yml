@@ -55,9 +55,10 @@ jobs:
     - name: Deploy to Azure VM
       run: |
         ssh -o StrictHostKeyChecking=no ishanc2003@outlook.com@${{ secrets.VM_IP }} << 'EOF'
-        docker login ${{ secrets.ACR_NAME }}.azurecr.io -u ${{ secrets.ACR_USERNAME }} -p ${{ secrets.ACR_PASSWORD }}
+        docker login ${{ secrets.ACR_NAME }}.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }}
         docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
         docker stop djangoapp || true
         docker rm djangoapp || true
         docker run -d -p 8000:8000 --name djangoapp ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
         EOF
+
