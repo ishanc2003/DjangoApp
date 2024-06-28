@@ -62,3 +62,4 @@ jobs:
         docker run -d -p 8000:8000 --name djangoapp ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
         EOF
 
+
