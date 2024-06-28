@@ -1,0 +1,53 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CLIENT_ID }},${{ secrets.AZURE_CLIENT_SECRET }},${{ secrets.AZURE_TENANT_ID }},${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Login to Azure Container Registry
+      run: |
+        az acr login --name ${{ secrets.ACR_NAME }}
+
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest .
+
+    - name: Push Docker image
+      run: |
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CLIENT_ID }},${{ secrets.AZURE_CLIENT_SECRET }},${{ secrets.AZURE_TENANT_ID }},${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Deploy to Azure VM
+      run: |
+        ssh -o StrictHostKeyChecking=no ishansVM@your_vm_ip << 'EOF'
+        docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+        docker stop djangoapp || true
+        docker rm djangoapp || true
+        docker run -d -p 8000:8000 --name djangoapp ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+        EOF
