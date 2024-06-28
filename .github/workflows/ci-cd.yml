@@ -10,50 +10,53 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Login to Azure Container Registry
-        run: az acr login --name MyReg2211
-        env:
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-          ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
+    - name: Login to Azure Container Registry
+      run: |
+        echo ${{ secrets.ACR_PASSWORD }} | docker login ${{ secrets.ACR_NAME }}.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password-stdin
 
-      - name: Build Docker image
-        run: docker build -t MyReg2211.azurecr.io/djangoapp:latest .
+    - name: Build Docker image
+      run: |
+        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest .
 
-      - name: Push Docker image
-        run: docker push MyReg2211.azurecr.io/djangoapp:latest
+    - name: Push Docker image
+      run: |
+        docker push ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
 
   deploy:
-    runs-on: ubuntu-latest
     needs: build
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
-        uses: actions/checkout@v2
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Add SSH key
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Add SSH key
+      uses: webfactory/ssh-agent@v0.5.3
+      with:
+        ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Deploy to Azure VM
-        run: |
-          ssh -o StrictHostKeyChecking=no ishansVM@20.244.45.96 << 'EOF'
-            docker pull myreg2211.azurecr.io/djangoapp:latest
-            docker stop djangoapp || true
-            docker rm djangoapp || true
-            docker run -d --name djangoapp -p 80:8000 myreg2211.azurecr.io/djangoapp:latest
-          EOF
+    - name: Check SSH Connectivity
+      run: |
+        ssh -vvv -o StrictHostKeyChecking=no your_username@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
+
+    - name: Deploy to Azure VM
+      run: |
+        ssh -o StrictHostKeyChecking=no your_username@${{ secrets.VM_IP }} << 'EOF'
+        docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+        docker stop djangoapp || true
+        docker rm djangoapp || true
+        docker run -d -p 8000:8000 --name djangoapp ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+        EOF
