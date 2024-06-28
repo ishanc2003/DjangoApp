@@ -54,7 +54,6 @@ jobs:
 
     - name: Deploy to Azure VM
       run: |
-        ssh -o StrictHostKeyChecking=no $ishanc2003@outlook.com@${{ secrets.VM_IP }} << 'EOF'
         az login --service-principal --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} --tenant ${{ secrets.AZURE_TENANT_ID }}
         az acr login --name ${{ secrets.ACR_NAME }}
         docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
