@@ -23,15 +23,15 @@ jobs:
 
     - name: Login to Azure Container Registry
       run: |
-        echo ${{ secrets.ACR_PASSWORD }} | docker login ${{ secrets.ACR_NAME }}.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password-stdin
+        echo ${{ secrets.ACR_PASSWORD }} | docker login MyReg2211.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password-stdin
 
     - name: Build Docker image
       run: |
-        docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest .
+        docker build -t MyReg2211.azurecr.io/djangoapp:latest .
 
     - name: Push Docker image
       run: |
-        docker push ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+        docker push MyReg2211.azurecr.io/djangoapp:latest
 
   deploy:
     needs: build
@@ -56,9 +56,9 @@ jobs:
       run: |
         ssh -o StrictHostKeyChecking=no ishanc2003@outlook.com@${{ secrets.VM_IP }} << 'EOF'
         az login --service-principal --username ${{ secrets.AZURE_CLIENT_ID }} --password ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-        az acr login --name ${{ secrets.ACR_NAME }}
-        docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+        az acr login --name MyReg2211
+        docker pull MyReg2211.azurecr.io/djangoapp:latest
         docker stop djangoapp || true
         docker rm djangoapp || true
-        docker run -d -p 8000:8000 --name djangoapp ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
+        docker run -d -p 8000:8000 --name djangoapp MyReg2211.azurecr.io/djangoapp:latest
         EOF
