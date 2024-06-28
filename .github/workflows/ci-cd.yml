@@ -44,8 +44,10 @@ jobs:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Deploy to Azure VM
+      env:
+        VM_IP: ${{ secrets.VM_IP }}
       run: |
-        ssh -o StrictHostKeyChecking=no ishansVM@your_vm_ip << 'EOF'
+        ssh -o StrictHostKeyChecking=no ishansVM@$VM_IP << 'EOF'
         docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
         docker stop djangoapp || true
         docker rm djangoapp || true
