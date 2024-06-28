@@ -22,7 +22,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Login to Azure Container Registry
-        run: az acr login --name myreg2211
+        run: az acr login --name MyReg2211
         env:
           AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
           AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
@@ -31,10 +31,10 @@ jobs:
           ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
 
       - name: Build Docker image
-        run: docker build -t myreg2211.azurecr.io/djangoapp:latest .
+        run: docker build -t MyReg2211.azurecr.io/djangoapp:latest .
 
       - name: Push Docker image
-        run: docker push myreg2211.azurecr.io/djangoapp:latest
+        run: docker push MyReg2211.azurecr.io/djangoapp:latest
 
   deploy:
     runs-on: ubuntu-latest
