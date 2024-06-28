@@ -35,6 +35,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
     - name: Login to Azure
       uses: azure/login@v1
       with:
@@ -47,7 +50,7 @@ jobs:
 
     - name: Check SSH Connectivity
       run: |
-        ssh -vvv -o StrictHostKeyChecking=no ishanc2003@outlook.com@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
+        ssh -vvv -o StrictHostKeyChecking=no ${YOUR_VM_USER}@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
 
     - name: Deploy to Azure VM
       run: |
