@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI/CD
 
 on:
   push:
@@ -8,48 +8,47 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
+    - name: Log in to Azure CLI
+      uses: azure/login@v1
       with:
-        python-version: '3.9'
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: Install dependencies
+    - name: Build and push Docker image
       run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-
-    - name: Build Docker image
-      run: docker build -t my_django_app .
-
-    - name: Log in to Azure Container Registry
-      run: az acr login --name myreg2211
-      env:
-        AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS }}
-
-    - name: Tag Docker image
-      run: docker tag my_django_app myreg2211.azurecr.io/my_django_app:latest
-
-    - name: Push Docker image to ACR
-      run: docker push myreg2211.azurecr.io/my_django_app:latest
+        docker build -t my_django_app .
+        docker tag my_django_app myreg2211.azurecr.io/my_django_app:latest
+        az acr login --name myreg2211
+        docker push myreg2211.azurecr.io/my_django_app:latest
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Set up SSH
+    - name: Log in to Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Add SSH key
       uses: webfactory/ssh-agent@v0.5.3
       with:
         ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-    - name: SSH into Azure VM and deploy
+    - name: Run deployment script on Azure VM
       run: |
-        az ssh vm --ip 20.244.45.96
-        docker pull myreg2211.azurecr.io/my_django_app:latest
-        docker run -d -p 8000:8000 myreg2211.azurecr.io/my_django_app:latest
+        ssh -o StrictHostKeyChecking=no ishansVM@$VM_IP << 'EOF'
+          az acr login --name myreg2211
+          docker pull myreg2211.azurecr.io/my_django_app:latest
+          docker run -d -p 8000:8000 myreg2211.azurecr.io/my_django_app:latest
+        EOF
+      env:
+        VM_IP: ${{ secrets.VM_IP }}
