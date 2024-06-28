@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+check my workflow: name: CI/CD Pipeline
 
 on:
   push:
@@ -24,23 +24,17 @@ jobs:
     - name: Login to Azure Container Registry
       run: |
         echo ${{ secrets.ACR_PASSWORD }} | docker login ${{ secrets.ACR_NAME }}.azurecr.io --username ${{ secrets.ACR_USERNAME }} --password-stdin
-
     - name: Build Docker image
       run: |
         docker build -t ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest .
-
     - name: Push Docker image
       run: |
         docker push ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
-
   deploy:
     needs: build
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
     - name: Login to Azure
       uses: azure/login@v1
       with:
@@ -53,13 +47,10 @@ jobs:
 
     - name: Check SSH Connectivity
       run: |
-        ssh -vvv -o StrictHostKeyChecking=no $ishanc2003@outlook.com@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
-
+        ssh -vvv -o StrictHostKeyChecking=no ishanc2003@outlook.com@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
     - name: Deploy to Azure VM
       run: |
-        ssh -o StrictHostKeyChecking=no ${YOUR_VM_USER}@${{ secrets.VM_IP }} << 'EOF'
-        az login --service-principal --username ${{ secrets.ACR_USERNAME }} --password ${{ secrets.ACR_PASSWORD }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-        az acr login --name ${{ secrets.ACR_NAME }}
+        ssh -o StrictHostKeyChecking=no ishanc2003@outlook.com@${{ secrets.VM_IP }} << 'EOF'
         docker pull ${{ secrets.ACR_NAME }}.azurecr.io/djangoapp:latest
         docker stop djangoapp || true
         docker rm djangoapp || true
