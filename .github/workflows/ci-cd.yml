@@ -50,7 +50,7 @@ jobs:
 
     - name: Check SSH Connectivity
       run: |
-        ssh -vvv -o StrictHostKeyChecking=no ${YOUR_VM_USER}@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
+        ssh -vvv -o StrictHostKeyChecking=no $ishanc2003@outlook.com@${{ secrets.VM_IP }} "echo 'SSH connection successful'"
 
     - name: Deploy to Azure VM
       run: |
